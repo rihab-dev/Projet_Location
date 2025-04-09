@@ -14,28 +14,22 @@ class RendezVous
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    private ?User $etudiant = null;
-
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    private ?User $proprietaire = null;
-
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $heure = null;
+    #[ORM\Column(type: Types::TIME_MUTABLE)] // Changé de string à TIME_MUTABLE
+    private ?\DateTimeInterface $heure = null;
 
     #[ORM\Column(length: 255)]
     private string $statut = self::STATUT_EN_ATTENTE;
 
-    // Constantes pour les statuts possibles
     public const STATUT_EN_ATTENTE = 'en_attente';
     public const STATUT_CONFIRME = 'confirme';
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'rendezVous')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    // Si vous ne voulez pas de relation User pour le moment, commentez ou supprimez cette ligne
+    // #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'rendezVous')]
+    // #[ORM\JoinColumn(nullable: false)]
+    // private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -50,19 +44,17 @@ class RendezVous
     public function setDate(\DateTimeInterface $date): static
     {
         $this->date = $date;
-
         return $this;
     }
 
-    public function getHeure(): ?string
+    public function getHeure(): ?\DateTimeInterface
     {
         return $this->heure;
     }
 
-    public function setHeure(string $heure): static
+    public function setHeure(\DateTimeInterface $heure): static
     {
         $this->heure = $heure;
-
         return $this;
     }
 
@@ -76,7 +68,6 @@ class RendezVous
         if (!in_array($statut, self::getStatutsDisponibles())) {
             throw new \InvalidArgumentException("Statut invalide");
         }
-
         $this->statut = $statut;
         return $this;
     }
@@ -87,17 +78,5 @@ class RendezVous
             self::STATUT_EN_ATTENTE,
             self::STATUT_CONFIRME,
         ];
-    }
-
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): static
-    {
-        $this->user = $user;
-
-        return $this;
     }
 }

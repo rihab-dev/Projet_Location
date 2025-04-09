@@ -6,24 +6,24 @@ use App\Entity\RendezVous;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\DateType; // Ajout de l'import manquant
 use Symfony\Component\Form\Extension\Core\Type\TimeType;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use App\Entity\Chambre;
 
 class RendezVousType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('date', DateTimeType::class, [
+            ->add('date', DateType::class, [
                 'widget' => 'single_text',
-                'html5' => false,
+                'html5' => true,
+                'attr' => ['class' => 'datepicker']
             ])
             ->add('heure', TimeType::class, [
-                'input' => 'string',
-                'widget' => 'choice',
-                'hours' => range(8, 20),
+                'input' => 'datetime',
+                'widget' => 'single_text',
+                'html5' => true,
+                'attr' => ['class' => 'timepicker']
             ]);
     }
 

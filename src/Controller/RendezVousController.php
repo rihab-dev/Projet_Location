@@ -16,6 +16,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 #[Route('/rendezvous')]
 class RendezVousController extends AbstractController
@@ -29,40 +31,31 @@ class RendezVousController extends AbstractController
     }
 
     #[Route('/new', name: 'app_rendez_vous_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, EmailService $emailService): Response
+    #[Route('/new', name: 'app_rendez_vous_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $rendezVous = new RendezVous();
         $form = $this->createForm(RendezVousType::class, $rendezVous);
         $form->handleRequest($request);
 
-       if ($form->isSubmitted() && $form->isValid()) {
-            // Vérifier que l'utilisateur connecté est un étudiant
-            $user = $this->getUser();
-            if (!$user || !in_array('ROLE_ETUDIANT', $user->getRoles())) {
-                throw $this->createAccessDeniedException('Seuls les étudiants peuvent prendre rendez-vous.');
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $rendezVous->setStatut('en_attente');
+                $entityManager->persist($rendezVous);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Rendez-vous enregistré avec succès!');
+                return $this->redirectToRoute('app_rendez_vous_index');
+            } else {
+                // Affichez les erreurs de validation
+                $this->addFlash('error', 'Veuillez corriger les erreurs dans le formulaire.');
             }
-
-            $rendezVous->setEtudiant($user);
-            $rendezVous->setStatut('en_attente');
-
-            $entityManager->persist($rendezVous);
-            $entityManager->flush();
-
-            // Envoyer un email au propriétaire
-            $emailService->sendRendezVousNotification(
-                $rendezVous->getProprietaire()->getEmail(),
-                $rendezVous
-            );
-
-            return $this->redirectToRoute('app_rendez_vous_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('rendez_vous/new.html.twig', [
-            'rendez_vous' => $rendezVous,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
-
     #[Route('/{id}/confirm', name: 'app_rendez_vous_confirm', methods: ['POST'])]
     public function confirm(Request $request, RendezVous $rendezVous, EntityManagerInterface $entityManager, EmailService $emailService): Response
     {

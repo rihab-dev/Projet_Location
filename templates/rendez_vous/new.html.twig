@@ -1,4 +1,9 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-<button class="btn btn-primary">Envoyer</button>
-{{ form_end(form) }}
+<div class="container">
+    <h1>Prendre un rendez-vous</h1>
+
+    {{ form_start(form) }}
+    {{ form_row(form.date) }}
+    {{ form_row(form.heure) }}
+    <button type="submit" class="btn btn-primary">Demander le rendez-vous</button>
+    {{ form_end(form) }}
+</div>
